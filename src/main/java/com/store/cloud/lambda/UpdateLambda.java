@@ -1,16 +1,12 @@
 package com.store.cloud.lambda;
 
-import com.amazonaws.services.dynamodbv2.xspec.S;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.store.cloud.dynamodb.DynamodbConfig;
 import com.store.cloud.model.Product;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -22,10 +18,10 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.Map;
 
-public class UploadLambda implements RequestStreamHandler {
+public class UpdateLambda implements RequestStreamHandler {
     Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.US_ASCII));
@@ -33,12 +29,11 @@ public class UploadLambda implements RequestStreamHandler {
             HashMap event = gson.fromJson(reader, HashMap.class);
             Product product = gson.fromJson(event.get("body").toString(), Product.class);
 
-            DynamodbConfig.createItems(product);
+            DynamodbConfig.updateItems(product);
 
-            Map<String, String> headers = new HashMap<>();
-            headers.put("Content-Type", "application/json");
+            System.out.println("response: " + gson.toJson(event));
 
-            writer.write(String.valueOf(new APIGatewayProxyResponseEvent().withStatusCode(200).withHeaders(headers).withBody(gson.toJson(product)).withIsBase64Encoded(false)));
+            writer.write(gson.toJson(event));
             if (writer.checkError()) {
                 System.out.println("WARNING: Writer encountered an error.");
             }
