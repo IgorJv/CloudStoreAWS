@@ -28,17 +28,23 @@ public class UploadLambda implements RequestStreamHandler {
     Gson gson = new GsonBuilder().setPrettyPrinting().create();
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.US_ASCII));
-             PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.US_ASCII)))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+             PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)))) {
             HashMap event = gson.fromJson(reader, HashMap.class);
             Product product = gson.fromJson(event.get("body").toString(), Product.class);
 
             DynamodbConfig.createItems(product);
 
-            Map<String, String> headers = new HashMap<>();
-            headers.put("Content-Type", "application/json");
+            JSONObject obj = new JSONObject();
+            JSONObject obj2 = new JSONObject();
+            obj2.put("Content-Type", "application/json");
+            obj.put("statusCode", 200);
+            obj.put("headers", obj2);
+            obj.put("body", gson.toJson(product));
 
-            writer.write(String.valueOf(new APIGatewayProxyResponseEvent().withStatusCode(200).withHeaders(headers).withBody(gson.toJson(product)).withIsBase64Encoded(false)));
+            writer.write(obj.toString());
+            writer.close();
+
             if (writer.checkError()) {
                 System.out.println("WARNING: Writer encountered an error.");
             }

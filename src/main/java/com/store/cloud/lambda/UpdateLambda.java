@@ -7,6 +7,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.store.cloud.dynamodb.DynamodbConfig;
 import com.store.cloud.model.Product;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -31,9 +32,16 @@ public class UpdateLambda implements RequestStreamHandler {
 
             DynamodbConfig.updateItems(product);
 
-            System.out.println("response: " + gson.toJson(event));
+            JSONObject obj = new JSONObject();
+            JSONObject obj2 = new JSONObject();
+            obj2.put("Content-Type", "application/json");
+            obj.put("statusCode", 200);
+            obj.put("headers", obj2);
+            obj.put("body", gson.toJson(product));
 
-            writer.write(gson.toJson(event));
+            writer.write(obj.toString());
+            writer.close();
+
             if (writer.checkError()) {
                 System.out.println("WARNING: Writer encountered an error.");
             }
