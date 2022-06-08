@@ -23,8 +23,9 @@ import static com.store.cloud.constants.Constants.BODY;
 import static com.store.cloud.constants.Constants.LAMBDA_ERROR_MESSAGE;
 import static com.store.cloud.utils.LambdaUtils.generateResponse;
 
-public class UploadLambda implements RequestStreamHandler {
+public class UpdateLambda implements RequestStreamHandler {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
@@ -32,7 +33,7 @@ public class UploadLambda implements RequestStreamHandler {
             HashMap event = gson.fromJson(reader, HashMap.class);
             Product product = gson.fromJson(event.get(BODY).toString(), Product.class);
 
-            DynamodbConfig.createItems(product);
+            DynamodbConfig.updateItems(product);
 
             writer.write(generateResponse(gson.toJson(product)).toString());
             writer.close();
