@@ -7,7 +7,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.store.cloud.dynamodb.DynamodbConfig;
 import com.store.cloud.model.Product;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -20,30 +19,27 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
+import static com.store.cloud.constants.Constants.BODY;
+import static com.store.cloud.constants.Constants.LAMBDA_ERROR_MESSAGE;
+import static com.store.cloud.utils.LambdaUtils.generateResponse;
+
 public class UpdateLambda implements RequestStreamHandler {
-    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.US_ASCII));
-             PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.US_ASCII)))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+             PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)))) {
             HashMap event = gson.fromJson(reader, HashMap.class);
-            Product product = gson.fromJson(event.get("body").toString(), Product.class);
+            Product product = gson.fromJson(event.get(BODY).toString(), Product.class);
 
             DynamodbConfig.updateItems(product);
 
-            JSONObject obj = new JSONObject();
-            JSONObject obj2 = new JSONObject();
-            obj2.put("Content-Type", "application/json");
-            obj.put("statusCode", 200);
-            obj.put("headers", obj2);
-            obj.put("body", gson.toJson(product));
-
-            writer.write(obj.toString());
+            writer.write(generateResponse(gson.toJson(product)).toString());
             writer.close();
 
             if (writer.checkError()) {
-                System.out.println("WARNING: Writer encountered an error.");
+                System.out.println(LAMBDA_ERROR_MESSAGE);
             }
         } catch (IllegalStateException | JsonSyntaxException exception) {
             System.out.println(exception);

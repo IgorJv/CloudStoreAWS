@@ -19,6 +19,12 @@ public class DynamodbConfig {
     private static final String NAME = "name";
     private static final String PRICE = "price";
     private static final String PICTURE_URL = "pictureUrl";
+    private static final String EMPTY_BODY = "{}";
+    private static final String CREATE_ITEMS_ERROR = "Creation of item has failed ";
+    private static final String UPDATE_ITEMS_ERROR = "Failed to update multiple attributes in ";
+    private static final String UPDATE_ITEMS_SUCCESS = "Item updated.";
+    private static final String GET_ITEM_ERROR = "Failed to update multiple attributes in ";
+    private static final String GET_ITEM_SUCCESS = "Printing item after retrieving it.";
 
     public static void createItems(Product product) {
         Table table = dynamoDB.getTable(tableName);
@@ -30,7 +36,7 @@ public class DynamodbConfig {
 
             table.putItem(item);
         } catch (Exception e) {
-            System.out.println("Creation of item has failed " + e.getMessage());
+            System.out.println(CREATE_ITEMS_ERROR + e.getMessage());
         }
     }
 
@@ -51,11 +57,28 @@ public class DynamodbConfig {
             table.updateItem(updatePriceItemSpec);
             table.updateItem(updatePictureUrlItemSpec);
 
-            System.out.println("Item updated.");
+            System.out.println(UPDATE_ITEMS_SUCCESS);
             System.out.println(updateItemOutcome.getItem().toJSON());
         } catch (Exception e) {
-            System.err.println("Failed to update multiple attributes in " + tableName);
+            System.err.println(UPDATE_ITEMS_ERROR + tableName);
             System.err.println(e.getMessage());
         }
+    }
+
+    public static String getItem(Integer productId) {
+        Table table = dynamoDB.getTable(tableName);
+
+        String response = EMPTY_BODY;
+        try {
+            Item item = table.getItem(ID, productId);
+
+            System.out.println(GET_ITEM_SUCCESS);
+            System.out.println(item.toJSONPretty());
+            response = item.toJSONPretty();
+        } catch (Exception e) {
+            System.err.println(GET_ITEM_ERROR);
+            System.err.println(e.getMessage());
+        }
+        return response;
     }
 }
