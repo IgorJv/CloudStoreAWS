@@ -34,6 +34,11 @@
             <artifactId>aws-java-sdk-dynamodb</artifactId>
             <version>1.12.227</version>
         </dependency>
+        <!--        <dependency>-->
+        <!--            <groupId>com.amazonaws</groupId>-->
+        <!--            <artifactId>aws-java-sdk</artifactId>-->
+        <!--            <version>1.12.227</version>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
@@ -49,11 +54,6 @@
             <artifactId>json</artifactId>
             <version>20190722</version>
         </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>com.amazonaws</groupId>-->
-        <!--            <artifactId>aws-java-sdk</artifactId>-->
-        <!--            <version>1.12.227</version>-->
-        <!--        </dependency>-->
     </dependencies>
 
     <build>
